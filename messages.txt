@@ -1,2 +1,4 @@
 "what is this project about?"
 
+"Add pages for viewing events, booking events and paying for the bookings via stripe. User should also see their booked tickets"
+
