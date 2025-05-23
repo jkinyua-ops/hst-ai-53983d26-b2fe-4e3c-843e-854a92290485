@@ -1,0 +1,62 @@
+@page "/mytickets"
+@inject EventService EventService
+
+<h1>My Tickets</h1>
+
+@if (bookings == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (bookings.Count == 0)
+{
+    <p>You haven't booked any tickets yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Tickets</th>
+                <th>Total Price</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var booking in bookings)
+            {
+                <tr>
+                    <td>@GetEventName(booking.EventId)</td>
+                    <td>@GetEventDate(booking.EventId).ToShortDateString()</td>
+                    <td>@booking.TicketCount</td>
+                    <td>$@booking.TotalPrice</td>
+                    <td>@(booking.IsPaid ? "Paid" : "Pending")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Booking> bookings;
+    private List<Event> events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // In a real application, you'd get the user ID from authentication
+        string userId = "user123";
+        bookings = await EventService.GetUserBookingsAsync(userId);
+        events = await EventService.GetEventsAsync();
+    }
+
+    private string GetEventName(int eventId)
+    {
+        return events.FirstOrDefault(e => e.Id == eventId)?.Name ?? "Unknown Event";
+    }
+
+    private DateTime GetEventDate(int eventId)
+    {
+        return events.FirstOrDefault(e => e.Id == eventId)?.Date ?? DateTime.MinValue;
+    }
+}
