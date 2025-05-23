@@ -1,0 +1,47 @@
+@page "/payment/{BookingId:int}"
+@inject EventService EventService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<h1>Payment</h1>
+
+@if (booking == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>Total Amount: $@booking.TotalPrice</p>
+    <button @onclick="ProcessPayment" class="btn btn-success">Pay with Stripe</button>
+}
+
+@code {
+    [Parameter]
+    public int BookingId { get; set; }
+
+    private Booking booking;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // In a real application, you'd get the user ID from authentication
+        string userId = "user123";
+        var userBookings = await EventService.GetUserBookingsAsync(userId);
+        booking = userBookings.FirstOrDefault(b => b.Id == BookingId);
+    }
+
+    private async Task ProcessPayment()
+    {
+        // In a real application, you would integrate with Stripe here
+        // For this example, we'll just mark the booking as paid
+        bool success = await EventService.MarkBookingAsPaidAsync(BookingId);
+        if (success)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Payment successful!");
+            NavigationManager.NavigateTo("/mytickets");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Payment failed. Please try again.");
+        }
+    }
+}
