@@ -1,0 +1,38 @@
+@page "/events"
+@inject EventService EventService
+
+<h1>Events</h1>
+
+@if (events == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        @foreach (var evt in events)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@evt.Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@evt.Date.ToShortDateString()</h6>
+                        <p class="card-text">@evt.Description</p>
+                        <p>Price: $@evt.Price</p>
+                        <p>Available Tickets: @evt.AvailableTickets</p>
+                        <a href="/book/@evt.Id" class="btn btn-primary">Book Now</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Event> events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetEventsAsync();
+    }
+}
