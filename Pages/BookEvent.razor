@@ -1,0 +1,65 @@
+@page "/book/{EventId:int}"
+@inject EventService EventService
+@inject NavigationManager NavigationManager
+
+<h1>Book Event</h1>
+
+@if (evt == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h2>@evt.Name</h2>
+    <p>Date: @evt.Date.ToShortDateString()</p>
+    <p>Price: $@evt.Price</p>
+    <p>Available Tickets: @evt.AvailableTickets</p>
+
+    <EditForm Model="@bookingModel" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="ticketCount">Number of Tickets:</label>
+            <InputNumber id="ticketCount" @bind-Value="bookingModel.TicketCount" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Book Now</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private Event evt;
+    private BookingModel bookingModel = new BookingModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        evt = await EventService.GetEventAsync(EventId);
+        bookingModel.EventId = EventId;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        // In a real application, you'd get the user ID from authentication
+        string userId = "user123";
+        var booking = await EventService.CreateBookingAsync(EventId, userId, bookingModel.TicketCount);
+        if (booking != null)
+        {
+            NavigationManager.NavigateTo($"/payment/{booking.Id}");
+        }
+        else
+        {
+            // Handle booking failure (e.g., not enough tickets available)
+        }
+    }
+
+    private class BookingModel
+    {
+        public int EventId { get; set; }
+        [Range(1, 10, ErrorMessage = "Please select between 1 and 10 tickets.")]
+        public int TicketCount { get; set; } = 1;
+    }
+}
